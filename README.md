@@ -1,13 +1,22 @@
+![Clever Cloud logo](/assets/clever-cloud-logo.png)
+
 # Django Todo List Example for Clever Cloud
 
+[![Clever Cloud - PaaS](https://img.shields.io/badge/Clever%20Cloud-PaaS-orange?logo=clevercloud)](https://clever-cloud.com)
+[![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+
 A simple Django todo list application using modern Python tooling (uv, pyproject.toml) that deploys easily on Clever Cloud.
+
+![Screenshot](/assets/screenshot.jpg)
 
 ## Features
 
 - Create multiple todo lists
 - Add, complete, and delete todo items
 - Simple, clean UI
-- PostgreSQL database support
+- PostgreSQL database support (automatically configured on Clever Cloud)
+- SQLite fallback for local development (no database setup required)
 - Modern Python tooling with uv
 
 ## Local Development
@@ -48,7 +57,10 @@ SECRET_KEY=your-secret-key-here
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-By default, the app uses SQLite for local development. It automatically switches to PostgreSQL when deployed on Clever Cloud.
+**Database Configuration:**
+- **Local development**: Uses SQLite by default (no configuration needed)
+- **Production**: Automatically uses PostgreSQL when `POSTGRESQL_ADDON_HOST` is set
+- The app detects the environment and switches databases automatically
 
 ## Deployment on Clever Cloud
 
@@ -118,7 +130,11 @@ clever deploy
 | `CC_RUN_COMMAND` | Yes | Command to run the application with uv | - |
 | `CC_PRE_RUN_HOOK` | Yes | Commands to run before starting | - |
 | `DEBUG` | No | Enable Django debug mode | `False` |
-| `POSTGRESQL_ADDON_*` | Auto | Database credentials (set by Clever Cloud) | - |
+| `POSTGRESQL_ADDON_HOST` | Auto | PostgreSQL host (set by Clever Cloud addon) | - |
+| `POSTGRESQL_ADDON_PORT` | Auto | PostgreSQL port (set by Clever Cloud addon) | `5432` |
+| `POSTGRESQL_ADDON_DB` | Auto | PostgreSQL database name (set by Clever Cloud addon) | `todolist` |
+| `POSTGRESQL_ADDON_USER` | Auto | PostgreSQL username (set by Clever Cloud addon) | `postgres` |
+| `POSTGRESQL_ADDON_PASSWORD` | Auto | PostgreSQL password (set by Clever Cloud addon) | - |
 
 ### Static Files
 
