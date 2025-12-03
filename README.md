@@ -81,10 +81,10 @@ clever create --type python django-todo-list
 
 ```bash
 # Create a PostgreSQL addon
-clever addon create postgresql-addon my-todo-db
+clever addon create postgresql-addon django-todo-list
 
 # Link it to your application
-clever service link-addon my-todo-db
+clever service link-addon django-todo-list
 ```
 
 This automatically sets the `POSTGRESQL_ADDON_*` environment variables that the app uses.
@@ -135,6 +135,7 @@ clever deploy
 ### Static Files
 
 Static files are collected to the `staticfiles/` directory during deployment via the `CC_PRE_RUN_HOOK`.
+
 
 ## Project Structure
 
@@ -192,3 +193,102 @@ Static files are collected to the `staticfiles/` directory during deployment via
 ## License
 
 MIT
+
+## Legacy Deployment 
+
+If you prefer not tu use uv for your Clever Cloud deployments, you can deploy using traditional pip and uWSGI.
+
+### Step 0: Generate requirements.txt
+
+Generate `requirements.txt` from `pyproject.toml`:
+```bash
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+Commit the `requirements.txt` file to your repository.
+
+### Step 1: Create a Python Application
+
+```bash
+# Install Clever Cloud CLI if you haven't already
+# See: https://www.clever.cloud/developers/doc/cli/
+
+# Login
+clever login
+
+# Create a Python application
+clever create --type python django-todo-list-legacy
+```
+
+### Step 2: Add a PostgreSQL Database
+
+```bash
+# Create a PostgreSQL addon
+clever addon create postgresql-addon django-todo-list-legacy
+
+# Link it to your application
+clever service link-addon django-todo-list-legacy
+```
+
+This automatically sets the `POSTGRESQL_ADDON_*` environment variables that the app uses.
+
+### Step 3: Configure Environment Variables
+
+Set the required environment variables:
+
+```bash
+# Required: Django secret key (generate a secure one!)
+clever env set SECRET_KEY "your-super-secret-key-here"
+
+# Required: Your domain (or use the default .cleverapps.io domain)
+clever env set ALLOWED_HOSTS "your-app.cleverapps.io"
+
+# Required: WSGI module for traditional deployment
+clever env set CC_PYTHON_MODULE "config.wsgi:application"
+
+# Optional: Use uWSGI backend (default, can be omitted)
+# clever env set CC_PYTHON_BACKEND "uwsgi"
+
+# Required: Run migrations and collect static files on deployment
+clever env set CC_PRE_RUN_HOOK "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+```
+
+### Step 4: Deploy
+
+```bash
+clever deploy
+```
+
+### Environment Variables Reference (Legacy)
+
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `SECRET_KEY` | Yes | Django secret key | Generated insecure key (dev only) |
+| `ALLOWED_HOSTS` | Yes | Comma-separated list of allowed hosts | `localhost,127.0.0.1` |
+| `CC_PYTHON_MODULE` | Yes | WSGI application path | - |
+| `CC_PYTHON_BACKEND` | No | Web server (uwsgi is default) | `uwsgi` |
+| `CC_PRE_RUN_HOOK` | Yes | Commands to run before starting | - |
+| `DEBUG` | No | Enable Django debug mode | `False` |
+| `POSTGRESQL_ADDON_HOST` | Auto | PostgreSQL host (set by Clever Cloud addon) | - |
+| `POSTGRESQL_ADDON_PORT` | Auto | PostgreSQL port (set by Clever Cloud addon) | `5432` |
+| `POSTGRESQL_ADDON_DB` | Auto | PostgreSQL database name (set by Clever Cloud addon) | `todolist` |
+| `POSTGRESQL_ADDON_USER` | Auto | PostgreSQL username (set by Clever Cloud addon) | `postgres` |
+| `POSTGRESQL_ADDON_PASSWORD` | Auto | PostgreSQL password (set by Clever Cloud addon) | - |
+
+### Differences from Native uv Deployment
+
+| Aspect | Native uv | Legacy pip/uWSGI |
+|--------|-----------|------------------|
+| **Dependencies** | `pyproject.toml` + `uv.lock` | `requirements.txt` |
+| **Package Manager** | uv | pip |
+| **Web Server** | uvicorn (ASGI) | uWSGI (WSGI) |
+| **Port** | 8080 (direct) | 9000 (behind NGINX) |
+| **Module** | Uses `CC_PYTHON_UV_RUN_COMMAND` | Uses `CC_PYTHON_MODULE` |
+| **Performance** | Faster, modern | Traditional, stable |
+
+### When to Use Legacy Deployment
+
+- Air-gapped or restricted network environments
+- Environments where uv is not available
+- When you need uWSGI-specific features
+- Legacy infrastructure requirements
