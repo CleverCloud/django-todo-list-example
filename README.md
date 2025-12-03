@@ -100,14 +100,11 @@ clever env set SECRET_KEY "your-super-secret-key-here"
 # Required: Your domain (or use the default .cleverapps.io domain)
 clever env set ALLOWED_HOSTS "your-app.cleverapps.io"
 
-# Required: ASGI module
-clever env set CC_PYTHON_MODULE "config.asgi:application"
+# Required: Use native uv support with locked dependencies
+clever env set CC_PYTHON_UV_SYNC_FLAGS "--frozen"
 
-# Optional: Use uvicorn as the web server (recommended for modern async support)
-clever env set CC_PYTHON_BACKEND "uvicorn"
-
-# Required: Use uv to run the application
-clever env set CC_RUN_COMMAND "uv run uvicorn config.asgi:application --host 0.0.0.0 --port 9000"
+# Required: Run the application with uvicorn on port 8080 (native uv support)
+clever env set CC_PYTHON_UV_RUN_COMMAND ".venv/bin/uvicorn config.asgi:application --host 0.0.0.0 --port 8080"
 
 # Required: Run migrations and collect static files on deployment
 clever env set CC_PRE_RUN_HOOK "uv run python manage.py migrate --noinput && uv run python manage.py collectstatic --noinput"
@@ -125,9 +122,8 @@ clever deploy
 |----------|----------|-------------|---------|
 | `SECRET_KEY` | Yes | Django secret key | Generated insecure key (dev only) |
 | `ALLOWED_HOSTS` | Yes | Comma-separated list of allowed hosts | `localhost,127.0.0.1` |
-| `CC_PYTHON_MODULE` | Yes | ASGI application path | - |
-| `CC_PYTHON_BACKEND` | No | Web server (uvicorn/gunicorn/uwsgi) | `uwsgi` |
-| `CC_RUN_COMMAND` | Yes | Command to run the application with uv | - |
+| `CC_PYTHON_UV_SYNC_FLAGS` | Yes | uv sync flags for dependency installation | `--frozen` |
+| `CC_PYTHON_UV_RUN_COMMAND` | Yes | Command to run with native uv support | - |
 | `CC_PRE_RUN_HOOK` | Yes | Commands to run before starting | - |
 | `DEBUG` | No | Enable Django debug mode | `False` |
 | `POSTGRESQL_ADDON_HOST` | Auto | PostgreSQL host (set by Clever Cloud addon) | - |
