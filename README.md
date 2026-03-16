@@ -1,5 +1,3 @@
-![Clever Cloud logo](/assets/clever-cloud-logo.png)
-
 # Django Todo List Example for Clever Cloud
 
 [![Clever Cloud - PaaS](https://img.shields.io/badge/Clever%20Cloud-PaaS-orange?logo=clevercloud)](https://clever-cloud.com)
